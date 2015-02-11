@@ -4,6 +4,7 @@ package com.aloktripathy.sunshine;
  * Created by AL299758 on 2/10/2015.
  */
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -15,8 +16,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 
@@ -90,8 +93,23 @@ public class ForecastFragment extends Fragment {
         );
 
         //Get a reference to the ListView and attach this adapter to it
-        ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
+        final ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(mForecastAdapter);
+
+        //Now add listener for item click event
+        listView.setOnItemClickListener( new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //get the forecast string from adapter
+                String forecast = mForecastAdapter.getItem(position);
+                //create the intent with context and class
+                Intent detailIntent = new Intent(getActivity(), DetailActivity.class);
+
+                detailIntent.setData(Uri.parse(forecast));
+                detailIntent.putExtra(Intent.EXTRA_TEXT, forecast);
+                startActivity(detailIntent);
+            }
+        });
 
         return rootView;
     }
@@ -200,10 +218,17 @@ public class ForecastFragment extends Fragment {
             super.onPostExecute(result);
             if(result != null){
                 mForecastAdapter.clear();
+                //we are not going to add items one by one as it renders the view from scratch every
+                //time a new item is added
+                /*
                 for (String dayForecastStr : result){
                     Log.v(LOG_TAG, "DATA--" + dayForecastStr);
                     mForecastAdapter.add(dayForecastStr);
                 }
+                */
+
+                ArrayList<String> resultList = new ArrayList<String>(Arrays.asList(result));
+                mForecastAdapter.addAll(resultList);
             }
         }
     }
