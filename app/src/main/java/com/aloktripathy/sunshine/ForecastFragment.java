@@ -77,7 +77,9 @@ public class ForecastFragment extends Fragment {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String location = prefs.getString(getString(R.string.pref_location_key),
                 getString(R.string.pref_location_default));
-        weatherTask.execute(location);
+        String displayUnit = prefs.getString(getString(R.string.pref_unit_key),
+                getString(R.string.pref_unit_default));
+        weatherTask.execute(location, displayUnit);
     }
 
     @Override
@@ -134,7 +136,7 @@ public class ForecastFragment extends Fragment {
         @Override
         protected String[] doInBackground(String... params){
             //if there is no location set, then there's no point in looking up. Verify size of params.
-            if(params.length == 0){
+            if(params.length < 2){
                 return null;
             }
 
@@ -195,8 +197,10 @@ public class ForecastFragment extends Fragment {
                     return null;
                 }
                 forecastJsonStr = buffer.toString();
+                //resolve display unit
+                String display_unit = params[1];
                 try{
-                    return JsonFetcher.getWeatherDataFromJson(forecastJsonStr, numDays);
+                    return JsonFetcher.getWeatherDataFromJson(forecastJsonStr, numDays, display_unit);
                 }
                 catch (JSONException e) {
                     Log.e(LOG_TAG, "Error ", e);
